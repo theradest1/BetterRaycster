@@ -6,11 +6,11 @@ import numpy as np
 screenWidth = 1000
 screenHeight = 500
 
-mapHeight = 100
-mapWidth = 100
+mapHeight = 200
+mapWidth = 200
 
-playerX = mapWidth/2
-playerY = mapHeight/2
+playerX = mapWidth / 2
+playerY = mapHeight / 2
 playerRot = 0
 
 FOV = 90
@@ -18,10 +18,15 @@ quality = 1  # higher for lower quality
 maxDist = 100
 speed = .1
 rotSpeed = .1
-raySpacing = .5  # the distance between two points on a ray (not between rays)
+raySpacing = 2  # the distance between two points on a ray (not between rays)
 
 map = np.array([])
 map.resize(mapWidth, mapHeight)
+
+for x in range(0, mapWidth):
+    for y in range(0, mapHeight):
+        if y == 0 or y == mapHeight - 1 or x == 0 or x == mapWidth - 1:
+            map[x, y] = 1
 
 print(map)
 print(map.size)
@@ -35,35 +40,56 @@ pygame.display.set_caption('Raycaster')
 # rect = dvd.get_rect()
 
 red = (255, 0, 0)
+blue = (0, 0, 255)
+green = (0, 255, 0)
 black = (0, 0, 0)
+white = (255, 255, 255)
 
 clock = pygame.time.Clock()
 
 
 def clamp(value, lower, upper):
     return lower if value < lower else upper if value > upper else value
-  
+
+
+def printMap():
+    for _x in range(0, mapWidth):
+        for _y in range(0, mapHeight):
+            if map[_x, _y]:
+                screen.set_at((int(_x), int(_y)), white)
+
 
 def cast(x, y):
-    for angle in range(int(playerRot - FOV/2), int(playerRot + FOV/2 + 1), quality):
-        print(ray(x, y, angle))
+    for angle in range(int(playerRot - FOV / 2), int(playerRot + FOV / 2 + 1), quality):
+        dist, locX, locY = ray(x, y, angle)
+        # print(dist)
+        if dist:
+            dist *= math.cos(math.radians(playerRot - angle))
+            pygame.draw.rect(screen, wallColor(locX, locY), pygame.Rect((playerRot - angle) * 5, dist + 100, 5, 100 - dist * 2))
+
 
 def ray(x, y, angle):
-  rayX = x
-  rayY = y
-  dist = 0
-  xStep = math.cos(math.radians(angle)) * raySpacing
-  yStep = math.sin(math.radians(angle)) * raySpacing
-  for dist in range(maxDist):
-      rayX += xStep
-      rayY += yStep
-      if not(0 <= rayX < mapWidth and 0 <= rayY < mapHeight):
-        return False
-      #if np.zip(*map):
-      #  return map[rayX, rayY]
-      screen.set_at((int(rayX), int(rayY)), red)
-      
-  return False
+    _rayX = x
+    _rayY = y
+    _dist = 0
+    _xStep = math.cos(math.radians(angle)) * raySpacing
+    _yStep = math.sin(math.radians(angle)) * raySpacing
+    for _dist in range(maxDist):
+        _rayX += _xStep
+        _rayY += _yStep
+        if not (0 <= _rayX < mapWidth and 0 <= _rayY < mapHeight) or map[int(_rayX), int(_rayY)]:
+            return _dist, int(_rayX), int(_rayY)
+        screen.set_at((int(_rayX), int(_rayY)), red)
+    return False, False, False
+
+
+def wallColor(x, y):
+    #print(f"X: {clamp(x + 1, 0, mapWidth - 1)}, Y: {y}")
+    if map[clamp(x + 1, 0, mapWidth - 1), clamp(y, 0, mapWidth - 1)] and map[clamp(x - 1, 0, mapWidth - 1), clamp(y, 0, mapWidth - 1)]:
+        return red
+    elif map[clamp(x, 0, mapWidth - 1), clamp(y + 1, 0, mapHeight - 1)] and map[clamp(x, 0, mapWidth - 1), clamp(y - 1, 0, mapHeight - 1)]:
+        return blue
+    return green
 
 
 keys = []
@@ -71,8 +97,8 @@ while True:
     dt = clock.tick(60)
 
     screen.fill(black)
-    # pygame.draw.rect(screen, red, pygame.Rect(30, 30, 60, 60))
     cast(playerX, playerY)
+    printMap()
 
     # events
     for event in pygame.event.get():
