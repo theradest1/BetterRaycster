@@ -1,5 +1,6 @@
 import pygame
 import math
+import numpy as np
 
 # variables
 screenWidth = 1000
@@ -13,12 +14,17 @@ playerY = mapHeight/2
 playerRot = 0
 
 FOV = 90
-quality = 2  # higher for lower quality
-maxDist = 25
-speed = 1
-rotSpeed = 3
-raySpacing = 2  # the distance between two points on a ray (not between rays)
+quality = 1  # higher for lower quality
+maxDist = 100
+speed = .1
+rotSpeed = .1
+raySpacing = .5  # the distance between two points on a ray (not between rays)
 
+map = np.array([])
+map.resize(mapWidth, mapHeight)
+
+print(map)
+print(map.size)
 
 pygame.init()
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
@@ -34,22 +40,30 @@ black = (0, 0, 0)
 clock = pygame.time.Clock()
 
 
-def cast(x, y):
-    for angle in range(playerRot - int(FOV/2), playerRot + int(FOV/2) + 1, quality):
-        rayX = x
-        rayY = y
-        dist = 0
-        xStep = math.cos(math.radians(angle)) * raySpacing
-        yStep = math.sin(math.radians(angle)) * raySpacing
-        hit = False
-        # print(f"Angle: {angle}, X step: {xStep}, Y step: {yStep} ---------------------------")
+def clamp(value, lower, upper):
+    return lower if value < lower else upper if value > upper else value
+  
 
-        while dist <= maxDist and not hit:
-            rayX += xStep
-            rayY += yStep
-            dist += 1
-            # print(f"X: {rayX}, Y: {rayY}")
-            screen.set_at((int(rayX), int(rayY)), red)
+def cast(x, y):
+    for angle in range(int(playerRot - FOV/2), int(playerRot + FOV/2 + 1), quality):
+        print(ray(x, y, angle))
+
+def ray(x, y, angle):
+  rayX = x
+  rayY = y
+  dist = 0
+  xStep = math.cos(math.radians(angle)) * raySpacing
+  yStep = math.sin(math.radians(angle)) * raySpacing
+  for dist in range(maxDist):
+      rayX += xStep
+      rayY += yStep
+      if not(0 <= rayX < mapWidth and 0 <= rayY < mapHeight):
+        return False
+      #if np.zip(*map):
+      #  return map[rayX, rayY]
+      screen.set_at((int(rayX), int(rayY)), red)
+      
+  return False
 
 
 keys = []
@@ -71,14 +85,14 @@ while True:
     # keypresses
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
-        playerX += math.cos(math.radians(playerRot)) * speed
-        playerY += math.sin(math.radians(playerRot)) * speed
+        playerX = clamp(playerX + math.cos(math.radians(playerRot)) * speed * dt, 0, mapWidth)
+        playerY = clamp(playerY + math.sin(math.radians(playerRot)) * speed * dt, 0, mapHeight)
     if keys[pygame.K_DOWN]:
-        playerX -= math.cos(math.radians(playerRot)) * speed
-        playerY -= math.sin(math.radians(playerRot)) * speed
+        playerX = clamp(playerX - math.cos(math.radians(playerRot)) * speed * dt, 0, mapWidth)
+        playerY = clamp(playerY - math.sin(math.radians(playerRot)) * speed * dt, 0, mapHeight)
     if keys[pygame.K_RIGHT]:
-        playerRot += rotSpeed
+        playerRot += rotSpeed * dt
     if keys[pygame.K_LEFT]:
-        playerRot -= rotSpeed
+        playerRot -= rotSpeed * dt
 
     pygame.display.flip()
