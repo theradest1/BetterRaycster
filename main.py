@@ -13,7 +13,7 @@ playerY = mapHeight/2
 playerRot = 0
 
 FOV = 90
-quality = 1  # higher for lower quality
+quality = 2  # higher for lower quality
 maxDist = 25
 speed = 1
 rotSpeed = 3
@@ -39,8 +39,8 @@ def cast(x, y):
         rayX = x
         rayY = y
         dist = 0
-        xStep = math.cos(math.radians(angle))
-        yStep = math.sin(math.radians(angle))
+        xStep = math.cos(math.radians(angle)) * raySpacing
+        yStep = math.sin(math.radians(angle)) * raySpacing
         hit = False
         # print(f"Angle: {angle}, X step: {xStep}, Y step: {yStep} ---------------------------")
 
