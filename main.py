@@ -1,6 +1,7 @@
 import pygame
 import math
 import numpy as np
+from PIL import ImageEnhance, Image
 
 # variables
 screenWidth = 1000
@@ -13,14 +14,20 @@ playerX = mapWidth / 2
 playerY = mapHeight / 2
 playerRot = 0
 
-FOV =60
+FOV =90
 quality = 1  # higher for lower quality
 maxDist = screenHeight - 300
 speed = .1
 rotSpeed = .1
 raySpacing = 1  # the distance between two points on a ray (not between rays)
 
-wall = "wall.jpeg"
+wall = Image.open("lightWall.jpeg")
+enhancer = ImageEnhance.Brightness(wall)
+wall = enhancer.enhance(.5)
+wall.save("darkWall.jpeg")
+
+lightWall = pygame.image.load("lightWall.jpeg")
+darkWall = pygame.image.load("darkWall.jpeg")
 
 map = np.array([])
 map.resize(mapWidth, mapHeight)
@@ -66,13 +73,26 @@ def printMap():
 
 
 def cast(x, y):
+    #print("___________")
+    tAngle = -45
     for angle in range(int(playerRot - FOV / 2), int(playerRot + FOV / 2 + 1), quality):
         dist, locX, locY = ray(x, y, angle)
         # print(dist)
-        if dist:
-            dist *= math.cos(math.radians(playerRot - angle))
-            #dist -= 25
-            pygame.draw.rect(screen, wallColor(locX, locY), pygame.Rect((playerRot - angle) * pixelSpacing + 180, dist, pixelSpacing, maxDist - dist * 2 + 150))
+        unFish = math.cos(math.radians(tAngle))
+        #print(f"{unFish}, {_angle}")
+        tAngle += 1
+        dist *= unFish
+        
+        scale = maxDist - dist*2 + 200
+        #print(f"{dist * 2 + 150} < {maxDist}")
+        if dist and scale > 0:
+            #pygame.draw.rect(screen, wallColor(locX, locY), pygame.Rect((playerRot - angle) * pixelSpacing + 180, dist, pixelSpacing, maxDist - dist * 2 + 150))
+            printWall = wallColor(locX, locY)
+            if printWall:
+                
+              scaledWall = pygame.transform.scale(printWall, (pixelSpacing, scale))
+              locWall = ((playerRot - angle) * pixelSpacing + 180, dist - 50)
+              screen.blit(scaledWall, locWall)
             #print(screenHeight - dist * 2)
 
 
@@ -94,10 +114,10 @@ def ray(x, y, angle):
 def wallColor(x, y):
     #print(f"X: {clamp(x + 1, 0, mapWidth - 1)}, Y: {y}")
     if map[clamp(x + 1, 0, mapWidth - 1), clamp(y, 0, mapWidth - 1)] and map[clamp(x - 1, 0, mapWidth - 1), clamp(y, 0, mapWidth - 1)]:
-        return red
+        return lightWall
     elif map[clamp(x, 0, mapWidth - 1), clamp(y + 1, 0, mapHeight - 1)] and map[clamp(x, 0, mapWidth - 1), clamp(y - 1, 0, mapHeight - 1)]:
-        return blue
-    return green
+        return darkWall
+    return False
 
 
 keys = []
@@ -115,6 +135,7 @@ while True:
         elif event.type == pygame.VIDEORESIZE:
             screenWidth = screen.get_width()
             screenHeight = screen.get_height()
+            pixelSpacing = int(screenWidth/(FOV/quality))
 
     # keypresses
     keys = pygame.key.get_pressed()
