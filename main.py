@@ -8,13 +8,13 @@ screenWidth = 670
 screenHeight = 350
 
 mapHeight = 200
-mapWidth = 200
+map_width = 200
 
-playerX = mapWidth / 2
+playerX = map_width / 2
 playerY = mapHeight / 2
 playerRot = 0
 
-FOV =90
+FOV = 90
 quality = 3  # higher for lower quality
 maxDist = 100000
 speed = .1
@@ -29,24 +29,24 @@ wall.save("darkWall.png")
 lightWall = pygame.image.load("lightWall.png")
 darkWall = pygame.image.load("darkWall.png")
 
-map = np.array([])
-map.resize(mapWidth, mapHeight)
+mapMatrix = np.array([])
+mapMatrix.resize((map_width, mapHeight))
 
-for x in range(0, mapWidth):
+for x in range(0, map_width):
     for y in range(0, mapHeight):
-        if y == 0 or y == mapHeight - 1 or x == 0 or x == mapWidth - 1:
-            map[x, y] = 1
+        if y == 0 or y == mapHeight - 1 or x == 0 or x == map_width - 1:
+            mapMatrix[x, y] = 1
 
-#print(map)
-#print(map.size)
+# print(mapMatrix)
+# print(mapMatrix.size)
 
 pygame.init()
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
-pygame.display.set_caption('Raycaster')
+pygame.display.set_caption('Ray caster')
 
 screenWidth = screen.get_width()
 screenHeight = screen.get_height()
-pixelSpacing = int(screenWidth/(FOV/quality)) # for printing walls
+pixelSpacing = int(screenWidth/(FOV/quality))  # for printing walls
 
 # dvd = pygame.image.load('img_3.png')
 # dvd.convert()
@@ -65,57 +65,55 @@ def clamp(value, lower, upper):
     return lower if value < lower else upper if value > upper else value
 
 
-def printMap():
-    for _x in range(0, mapWidth):
+def print_map():
+    for _x in range(0, map_width):
         for _y in range(0, mapHeight):
-            if map[_x, _y]:
+            if mapMatrix[_x, _y]:
                 screen.set_at((int(_x), int(_y)), white)
 
 
-def cast(x, y):
-    #print("___________")
+def cast(map_x, map_y):
+    # print("___________")
     tAngle = -45
     for angle in range(int(playerRot - FOV / 2), int(playerRot + FOV / 2 + 1), quality):
-        dist, locX, locY = ray(x, y, angle)
+        dist, locX, locY = ray(map_x, map_y, angle)
         # print(dist)
         unFish = math.cos(math.radians(tAngle))
-        #print(f"{unFish}, {_angle}")
+        # print(f"{unFish}, {_angle}")
         tAngle += 1
         dist *= unFish
         
         scale = maxDist - dist*2 + 200
-        #print(f"{dist * 2 + 150} < {maxDist}")
+        # print(f"{dist * 2 + 150} < {maxDist}")
         if dist and scale > 0:
-            #pygame.draw.rect(screen, wallColor(locX, locY), pygame.Rect((playerRot - angle) * pixelSpacing + 180, dist, pixelSpacing, maxDist - dist * 2 + 150))
-            printWall = wallColor(locX, locY)
+            # pygame.draw.rect(screen, wall_color(locX, locY), pygame.Rect((playerRot - angle)
+            # * pixelSpacing + 180, dist, pixelSpacing, maxDist - dist * 2 + 150))
+            printWall = wall_color(locX, locY)
             if printWall:
-                
-              scaledWall = pygame.transform.scale(printWall, (pixelSpacing, scale))
-              locWall = ((playerRot - angle) * pixelSpacing + 180, dist - 50)
-              screen.blit(scaledWall, locWall)
-            #print(screenHeight - dist * 2)
+                scaledWall = pygame.transform.scale(printWall, (pixelSpacing, scale))
+                locWall = ((playerRot - angle) * pixelSpacing + 180, dist - 50)
+                screen.blit(scaledWall, locWall)
+            # print(screenHeight - dist * 2)
 
 
-def ray(x, y, angle):
-    _rayX = x
-    _rayY = y
+def ray(ray_x, ray_y, angle):
     _dist = 0
     _xStep = math.cos(math.radians(angle)) * raySpacing
     _yStep = math.sin(math.radians(angle)) * raySpacing
     for _dist in range(maxDist):
-        _rayX += _xStep
-        _rayY += _yStep
-        if not (0 <= _rayX < mapWidth and 0 <= _rayY < mapHeight) or map[int(_rayX), int(_rayY)]:
-            return _dist, int(_rayX), int(_rayY)
-        #screen.set_at((int(_rayX), int(_rayY)), red)
+        ray_x += _xStep
+        ray_y += _yStep
+        if not (0 <= ray_x < map_width and 0 <= ray_y < mapHeight) or mapMatrix[int(ray_x), int(ray_y)]:
+            return _dist, int(ray_x), int(ray_y)
+        # screen.set_at((int(ray_x), int(ray_y)), red)
     return False, False, False
 
 
-def wallColor(x, y):
-    #print(f"X: {clamp(x + 1, 0, mapWidth - 1)}, Y: {y}")
-    if map[clamp(x + 1, 0, mapWidth - 1), clamp(y, 0, mapWidth - 1)] and map[clamp(x - 1, 0, mapWidth - 1), clamp(y, 0, mapWidth - 1)]:
+def wall_color(map_x, map_y):
+    # print(f"map_x: {clamp(map_x + 1, 0, map_width - 1)}, map_y: {map_y}")
+    if mapMatrix[clamp(map_x + 1, 0, map_width - 1), clamp(map_y, 0, map_width - 1)] and mapMatrix[clamp(map_x - 1, 0, map_width - 1), clamp(map_y, 0, map_width - 1)]:
         return lightWall
-    elif map[clamp(x, 0, mapWidth - 1), clamp(y + 1, 0, mapHeight - 1)] and map[clamp(x, 0, mapWidth - 1), clamp(y - 1, 0, mapHeight - 1)]:
+    elif mapMatrix[clamp(map_x, 0, map_width - 1), clamp(map_y + 1, 0, mapHeight - 1)] and mapMatrix[clamp(map_x, 0, map_width - 1), clamp(map_y - 1, 0, mapHeight - 1)]:
         return darkWall
     return False
 
@@ -126,7 +124,7 @@ while True:
 
     screen.fill(black)
     cast(playerX, playerY)
-    #printMap()
+    # print_map()
 
     # events
     for event in pygame.event.get():
@@ -137,13 +135,13 @@ while True:
             screenHeight = screen.get_height()
             pixelSpacing = int(screenWidth/(FOV/quality))
 
-    # keypresses
+    # key presses
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
-        playerX = clamp(playerX + math.cos(math.radians(playerRot)) * speed * dt, 0, mapWidth)
+        playerX = clamp(playerX + math.cos(math.radians(playerRot)) * speed * dt, 0, map_width)
         playerY = clamp(playerY + math.sin(math.radians(playerRot)) * speed * dt, 0, mapHeight)
     if keys[pygame.K_DOWN]:
-        playerX = clamp(playerX - math.cos(math.radians(playerRot)) * speed * dt, 0, mapWidth)
+        playerX = clamp(playerX - math.cos(math.radians(playerRot)) * speed * dt, 0, map_width)
         playerY = clamp(playerY - math.sin(math.radians(playerRot)) * speed * dt, 0, mapHeight)
     if keys[pygame.K_RIGHT]:
         playerRot -= rotSpeed * dt
@@ -151,3 +149,4 @@ while True:
         playerRot += rotSpeed * dt
 
     pygame.display.flip()
+    
