@@ -21,12 +21,12 @@ speed = .1
 rotSpeed = .1
 raySpacing = 1  # the distance between two points on a ray (not between rays)
 
-wall = Image.open("lightWall.png")
+wall = Image.open("wallPast.png")
 enhancer = ImageEnhance.Brightness(wall)
 wall = enhancer.enhance(.5)
 wall.save("darkWall.png")
 
-lightWall = pygame.image.load("lightWall.png")
+lightWall = pygame.image.load("wallPast.png")
 darkWall = pygame.image.load("darkWall.png")
 
 mapMatrix = np.array([])
