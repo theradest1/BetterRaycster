@@ -15,7 +15,7 @@ playerY = mapHeight / 2
 playerRot = 0
 
 FOV = 90
-quality = 3  # higher for lower quality
+quality = 1  # higher for lower quality
 maxDist = 100000
 speed = .1
 rotSpeed = .1
@@ -83,7 +83,7 @@ def cast(map_x, map_y):
         tAngle += 1
         dist *= unFish
         
-        scale = maxDist - dist*2 + 200
+        scale = mapHeight - dist*2 + 200
         # print(f"{dist * 2 + 150} < {maxDist}")
         if dist and scale > 0:
             # pygame.draw.rect(screen, wall_color(locX, locY), pygame.Rect((playerRot - angle)
@@ -91,7 +91,8 @@ def cast(map_x, map_y):
             printWall = wall_color(locX, locY)
             if printWall:
                 scaledWall = pygame.transform.scale(printWall, (pixelSpacing, scale))
-                locWall = ((playerRot - angle) * pixelSpacing + 180, dist - 50)
+                locWall = ((playerRot - angle + 45) * pixelSpacing, dist - 50)
+                print(f"{pixelSpacing} * {playerRot - angle + 45}")
                 screen.blit(scaledWall, locWall)
             # print(screenHeight - dist * 2)
 
