@@ -13,12 +13,14 @@ playerX = mapWidth / 2
 playerY = mapHeight / 2
 playerRot = 0
 
-FOV = 90
+FOV =60
 quality = 1  # higher for lower quality
-maxDist = 100
+maxDist = screenHeight - 300
 speed = .1
 rotSpeed = .1
-raySpacing = 2  # the distance between two points on a ray (not between rays)
+raySpacing = 1  # the distance between two points on a ray (not between rays)
+
+wall = "wall.jpeg"
 
 map = np.array([])
 map.resize(mapWidth, mapHeight)
@@ -28,12 +30,16 @@ for x in range(0, mapWidth):
         if y == 0 or y == mapHeight - 1 or x == 0 or x == mapWidth - 1:
             map[x, y] = 1
 
-print(map)
-print(map.size)
+#print(map)
+#print(map.size)
 
 pygame.init()
 screen = pygame.display.set_mode((screenWidth, screenHeight), pygame.RESIZABLE)
 pygame.display.set_caption('Raycaster')
+
+screenWidth = screen.get_width()
+screenHeight = screen.get_height()
+pixelSpacing = int(screenWidth/(FOV/quality)) # for printing walls
 
 # dvd = pygame.image.load('img_3.png')
 # dvd.convert()
@@ -65,7 +71,9 @@ def cast(x, y):
         # print(dist)
         if dist:
             dist *= math.cos(math.radians(playerRot - angle))
-            pygame.draw.rect(screen, wallColor(locX, locY), pygame.Rect((playerRot - angle) * 5, dist + 100, 5, 100 - dist * 2))
+            #dist -= 25
+            pygame.draw.rect(screen, wallColor(locX, locY), pygame.Rect((playerRot - angle) * pixelSpacing + 180, dist, pixelSpacing, maxDist - dist * 2 + 150))
+            #print(screenHeight - dist * 2)
 
 
 def ray(x, y, angle):
@@ -79,7 +87,7 @@ def ray(x, y, angle):
         _rayY += _yStep
         if not (0 <= _rayX < mapWidth and 0 <= _rayY < mapHeight) or map[int(_rayX), int(_rayY)]:
             return _dist, int(_rayX), int(_rayY)
-        screen.set_at((int(_rayX), int(_rayY)), red)
+        #screen.set_at((int(_rayX), int(_rayY)), red)
     return False, False, False
 
 
@@ -98,15 +106,15 @@ while True:
 
     screen.fill(black)
     cast(playerX, playerY)
-    printMap()
+    #printMap()
 
     # events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
         elif event.type == pygame.VIDEORESIZE:
-            screenWidth = screen.get_height()
-            screenHeight = screen.get_width()
+            screenWidth = screen.get_width()
+            screenHeight = screen.get_height()
 
     # keypresses
     keys = pygame.key.get_pressed()
@@ -117,8 +125,8 @@ while True:
         playerX = clamp(playerX - math.cos(math.radians(playerRot)) * speed * dt, 0, mapWidth)
         playerY = clamp(playerY - math.sin(math.radians(playerRot)) * speed * dt, 0, mapHeight)
     if keys[pygame.K_RIGHT]:
-        playerRot += rotSpeed * dt
-    if keys[pygame.K_LEFT]:
         playerRot -= rotSpeed * dt
+    if keys[pygame.K_LEFT]:
+        playerRot += rotSpeed * dt
 
     pygame.display.flip()
