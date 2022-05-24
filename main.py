@@ -4,8 +4,8 @@ import numpy as np
 from PIL import ImageEnhance, Image
 
 # variables
-screenWidth = 1000
-screenHeight = 500
+screenWidth = 670
+screenHeight = 350
 
 mapHeight = 200
 mapWidth = 200
@@ -15,19 +15,19 @@ playerY = mapHeight / 2
 playerRot = 0
 
 FOV =90
-quality = 1  # higher for lower quality
-maxDist = screenHeight - 300
+quality = 3  # higher for lower quality
+maxDist = 100000
 speed = .1
 rotSpeed = .1
 raySpacing = 1  # the distance between two points on a ray (not between rays)
 
-wall = Image.open("lightWall.jpeg")
+wall = Image.open("lightWall.png")
 enhancer = ImageEnhance.Brightness(wall)
 wall = enhancer.enhance(.5)
-wall.save("darkWall.jpeg")
+wall.save("darkWall.png")
 
-lightWall = pygame.image.load("lightWall.jpeg")
-darkWall = pygame.image.load("darkWall.jpeg")
+lightWall = pygame.image.load("lightWall.png")
+darkWall = pygame.image.load("darkWall.png")
 
 map = np.array([])
 map.resize(mapWidth, mapHeight)
