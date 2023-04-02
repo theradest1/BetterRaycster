@@ -1,7 +1,7 @@
-import pygame
+import pygame #pip install pygame
 import math
-import numpy as np
-from PIL import ImageEnhance, Image
+import numpy as np #pip install numpy
+from PIL import ImageEnhance, Image #pip install pillow
 
 # variables
 screenWidth = 670
